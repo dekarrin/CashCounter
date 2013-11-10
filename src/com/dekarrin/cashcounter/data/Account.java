@@ -1,14 +1,19 @@
 package com.dekarrin.cashcounter.data;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
  * An account in the financial system. Includes doubly-linked tree.
  */
 public class Account {
+	
+	private NumberFormat currencyFormatter;
 	
 	public static enum Type {
 		ASSET,
@@ -48,14 +53,40 @@ public class Account {
 	public Account(String name, Type type) {
 		this.name = name;
 		this.type = type;
+		currencyFormatter = NumberFormat.getCurrencyInstance();
+	}
+	
+	public boolean hasChildren() {
+		return (children.size() > 0);
+	}
+	
+	public Account get(int position) {
+		return children.get(position);
 	}
 	
 	public void copyFrom(Account toCopyFrom) {
 		this.name = toCopyFrom.name;
 	}
 	
-	public long getInterfaceId() {
+	public long getUiId() {
 		return interfaceId;
+	}
+	
+	public int getChildrenCount() {
+		return children.size();
+	}
+	
+	/**
+	 * Formats currency amounts depending on the type of currency this account
+	 * uses.
+	 * @param amount
+	 * @return
+	 */
+	public String format(int amount) {
+		Currency c = Currency.getInstance(Locale.getDefault());
+		int frac = c.getDefaultFractionDigits();
+		double dAmount = amount / Math.pow(10, frac);
+		return currencyFormatter.format(dAmount);
 	}
 	
 	/**

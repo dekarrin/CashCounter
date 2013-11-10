@@ -30,7 +30,7 @@ public class DataManager {
 	
 	public void addAccount(Account act) {
 		act.setParent(root);
-		idMap.put(act.getInterfaceId(), act);
+		idMap.put(act.getUiId(), act);
 	}
 	
 	public List<Account> getTopLevelAccounts() {

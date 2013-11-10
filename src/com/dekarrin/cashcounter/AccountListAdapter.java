@@ -8,42 +8,27 @@ import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ExpandableListAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.dekarrin.cashcounter.data.Account;
 import com.dekarrin.cashcounter.data.DataManager;
 
-public class AccountListAdapter implements ListAdapter {
+public class AccountListAdapter implements ExpandableListAdapter {
 	
 	private Set<DataSetObserver> dataListeners;
-	private DataManager dm;
+	private Account parentAccount;
 	
-	public AccountListAdapter(Context context) {
+	public AccountListAdapter(Account parentAccount) {
 		dataListeners = new HashSet<DataSetObserver>();
-		dm = ((CashCountApplication)context.getApplicationContext()).getDataManager();
+		this.parentAccount = parentAccount;
 	}
 	
-	private void notifyDataChange() {
+	public void notifyDataChange() {
 		for (DataSetObserver dso : dataListeners) {
 			dso.onChanged();
 		}
-	}
-	
-	public void add(Account item) {
-		dm.addAccount(item);
-		notifyDataChange();
-	}
-	
-	public void remove(long id) {
-		dm.removeAccount(id);
-		notifyDataChange();
-	}
-	
-	public void modify(long id, Account toCopyFrom) {
-		Account a = dm.getAccountForId(id);
-		a.copyFrom(toCopyFrom);
-		notifyDataChange();
 	}
 	
 	@Override
@@ -57,54 +42,86 @@ public class AccountListAdapter implements ListAdapter {
 	}
 	
 	@Override
-	public int getViewTypeCount() {
-		return 1;
+	public void unregisterDataSetObserver(DataSetObserver dso) {
+		dataListeners.remove(dso);
 	}
 	
 	@Override
-	public boolean isEnabled(int position) {
-		if (position >= getCount()) {
-			throw new ArrayIndexOutOfBoundsException(position);
+	public Account getChild(int groupPosition, int childPosition) {
+		return parentAccount.get(groupPosition).get(childPosition);
+	}
+	
+	@Override
+	public long getChildId(int groupPosition, int childPosition) {
+		return getChild(groupPosition, childPosition).getUiId();
+	}
+	
+	@Override
+	public int getChildrenCount(int groupPosition) {
+		return getGroup(groupPosition).getChildrenCount();
+	}
+	
+	@Override
+	public long getCombinedChildId(long groupId, long childId) {
+		return childId;
+	}
+	
+	@Override
+	public long getCombinedGroupId(long groupId) {
+		return groupId;
+	}
+	
+	@Override
+	public Account getGroup(int groupPosition) {
+		return parentAccount.get(groupPosition);
+	}
+	
+	@Override
+	public int getGroupCount() {
+		return parentAccount.getChildrenCount();
+	}
+	
+	@Override
+	public long getGroupId(int position) {
+		return getGroup(position).getUiId();
+	}
+	
+	@Override
+	public boolean isChildSelectable(int groupPosition, int childPosition) {
+		if (groupPosition >= getGroupCount()) {
+			throw new ArrayIndexOutOfBoundsException(groupPosition);
+		} else if (childPosition >= getChildrenCount(groupPosition)) {
+			throw new ArrayIndexOutOfBoundsException(childPosition);
 		} else {
 			return true;
 		}
 	}
 	
 	@Override
-	public void unregisterDataSetObserver(DataSetObserver dso) {
-		dataListeners.remove(dso);
+	public void onGroupExpanded(int groupPosition) {
+		
 	}
 	
 	@Override
-	public int getCount() {
-		return dm.getAccountCount();
+	public void onGroupCollapsed(int groupPosition) {
+		
 	}
 	
 	@Override
-	public Account getItem(int position) {
-		return dm.getTopLevelAccounts().get(position);
-	}
-	
-	@Override
-	public long getItemId(int position) {
-		return getItem(position).getInterfaceId();
-	}
-	
-	@Override
-	public int getItemViewType(int position) {
-		return 0;
-	}
-	
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+	public View getGroupView(int position, boolean isExpanded, View convertView,
+			ViewGroup parent) {
 		View v = convertView;
 		if (v == null) {
 			LayoutInflater inf = LayoutInflater.from(parent.getContext());
 			v = inf.inflate(R.layout.list_element, null);
 		}
-		Account a = dm.getTopLevelAccounts().get(position);
+		Account a = parentAccount.get(position);
 		if (a != null) {
-			((TextView) v).setText(a.getName());
+			TextView accountName = (TextView) v.findViewById(R.id.account_name);
+			TextView accountTotal = (TextView) v.findViewById(R.id.account_total);
+			TextView accountArrow = (TextView) v.findViewById(R.id.account_arrow);
+			accountName.setText(a.getName());
+			accountTotal.setText(text);
 		}
 		return v;
 	}
@@ -116,6 +133,6 @@ public class AccountListAdapter implements ListAdapter {
 	
 	@Override
 	public boolean isEmpty() {
-		return getCount() == 0;
+		return (getGroupCount() == 0);
 	}
 }

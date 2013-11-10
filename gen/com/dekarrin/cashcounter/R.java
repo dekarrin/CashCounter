@@ -27,10 +27,12 @@ public final class R {
     public static final class id {
         public static final int accountNameField=0x7f080002;
         public static final int accountNameLabel=0x7f080001;
-        public static final int account_listing=0x7f080007;
+        public static final int account_arrow=0x7f080009;
+        public static final int account_name=0x7f080007;
+        public static final int account_total=0x7f080008;
         public static final int accounts_list=0x7f080006;
-        public static final int action_settings=0x7f080008;
-        public static final int add_account=0x7f080009;
+        public static final int action_settings=0x7f08000a;
+        public static final int add_account=0x7f08000b;
         public static final int button_add=0x7f080003;
         public static final int button_cancel=0x7f080005;
         public static final int button_delete=0x7f080004;
